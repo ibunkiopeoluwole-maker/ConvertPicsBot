@@ -17,7 +17,7 @@ from telegram.ext import (
 
 # ==================== CONFIGURATION ====================
 
-# Get bot token from environment variable
+# Get bot token from environment variable (SECURE - NOT hardcoded!)
 TOKEN = os.environ.get("TOKEN") or os.environ.get("BOT_TOKEN")
 
 if not TOKEN:
@@ -194,7 +194,7 @@ async def about_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 • Converts to PDF too!
 
 🛠️ **Built with:**
-• Python 3.11
+• Python 3.11+
 • python-telegram-bot
 • Pillow (PIL)
 
