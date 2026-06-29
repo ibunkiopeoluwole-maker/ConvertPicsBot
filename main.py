@@ -1,9 +1,8 @@
 import os
 import io
 import logging
-import asyncio
 from datetime import datetime
-from typing import Optional, Tuple, Dict, Any
+from typing import Dict, Any
 
 from PIL import Image
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -18,13 +17,11 @@ from telegram.ext import (
 
 # ==================== CONFIGURATION ====================
 
-# Environment variables
+# Get bot token from environment variable
 TOKEN = os.environ.get("TOKEN") or os.environ.get("BOT_TOKEN")
 
 if not TOKEN:
-    raise ValueError(
-        "❌ No TOKEN found! Please set TOKEN environment variable on Railway."
-    )
+    raise ValueError("❌ No TOKEN found! Please set TOKEN environment variable.")
 
 # Logging setup
 logging.basicConfig(
@@ -36,15 +33,15 @@ logger = logging.getLogger(__name__)
 # ==================== CONSTANTS ====================
 
 SUPPORTED_FORMATS = {
-    "jpg": {"name": "JPEG", "extension": "jpg", "mime": "image/jpeg"},
-    "jpeg": {"name": "JPEG", "extension": "jpg", "mime": "image/jpeg"},
-    "png": {"name": "PNG", "extension": "png", "mime": "image/png"},
-    "webp": {"name": "WEBP", "extension": "webp", "mime": "image/webp"},
-    "gif": {"name": "GIF", "extension": "gif", "mime": "image/gif"},
-    "bmp": {"name": "BMP", "extension": "bmp", "mime": "image/bmp"},
-    "ico": {"name": "ICO", "extension": "ico", "mime": "image/x-icon"},
-    "tiff": {"name": "TIFF", "extension": "tiff", "mime": "image/tiff"},
-    "pdf": {"name": "PDF", "extension": "pdf", "mime": "application/pdf"},
+    "jpg": {"name": "JPEG", "extension": "jpg"},
+    "jpeg": {"name": "JPEG", "extension": "jpg"},
+    "png": {"name": "PNG", "extension": "png"},
+    "webp": {"name": "WEBP", "extension": "webp"},
+    "gif": {"name": "GIF", "extension": "gif"},
+    "bmp": {"name": "BMP", "extension": "bmp"},
+    "ico": {"name": "ICO", "extension": "ico"},
+    "tiff": {"name": "TIFF", "extension": "tiff"},
+    "pdf": {"name": "PDF", "extension": "pdf"},
 }
 
 MAX_IMAGE_SIZE = 20 * 1024 * 1024  # 20MB
@@ -59,12 +56,6 @@ def get_image_format(image_bytes: bytes) -> str:
         return img.format.lower() if img.format else "unknown"
     except Exception:
         return "unknown"
-
-
-def validate_image_size(image_bytes: bytes) -> bool:
-    """Check if image size is within limits."""
-    return len(image_bytes) <= MAX_IMAGE_SIZE
-
 
 async def convert_image(image_bytes: bytes, target_format: str) -> bytes:
     """
@@ -156,7 +147,6 @@ Let's get started! Send me an image now. 🚀
 """
     await update.message.reply_text(welcome_text, parse_mode="Markdown")
 
-
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /help command."""
     help_text = """
@@ -187,7 +177,6 @@ Just send an image and follow the prompts!
 /about - Bot information
 """
     await update.message.reply_text(help_text, parse_mode="Markdown")
-
 
 async def about_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /about command."""
@@ -220,7 +209,6 @@ Contributions welcome on GitHub!
 """
     await update.message.reply_text(about_text, parse_mode="Markdown")
 
-
 async def cancel_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /cancel command to clear user data."""
     user_id = update.effective_user.id
@@ -230,14 +218,12 @@ async def cancel_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     else:
         await update.message.reply_text("ℹ️ No active conversion to cancel.")
 
-
 async def unknown_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle unknown commands."""
     await update.message.reply_text(
         "❌ Unknown command. Use /start, /help, or /about.\n"
         "Or just send me an image to convert!"
     )
-
 
 # ==================== IMAGE HANDLER ====================
 
@@ -261,7 +247,7 @@ async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     # Download image
     try:
         image_bytes = await file.download_as_bytearray()
-        image_bytes = bytes(image_bytes)  # Convert bytearray to bytes
+        image_bytes = bytes(image_bytes)
     except Exception as e:
         logger.error(f"Failed to download image: {e}")
         await update.message.reply_text(
@@ -304,7 +290,6 @@ async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         parse_mode="Markdown"
     )
 
-
 # ==================== CALLBACK HANDLER ====================
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -319,7 +304,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     if selected_format == "cancel":
         if user_id in USER_DATA:
             del USER_DATA[user_id]
-        await query.edit_message_text("❌ **Conversion cancelled.**\n\nSend a new image to start over.", parse_mode="Markdown")
+        await query.edit_message_text(
+            "❌ **Conversion cancelled.**\n\nSend a new image to start over.",
+            parse_mode="Markdown"
+        )
         return
     
     # Check if user has stored image
@@ -385,7 +373,6 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             parse_mode="Markdown"
         )
 
-
 # ==================== ERROR HANDLER ====================
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -402,7 +389,6 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             ),
             parse_mode="Markdown"
         )
-
 
 # ==================== MAIN FUNCTION ====================
 
@@ -429,10 +415,9 @@ def main() -> None:
     # Add error handler
     application.add_error_handler(error_handler)
     
-    # Start bot (using polling for Railway)
+    # Start bot
     logger.info("✅ Bot is running and listening for messages...")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
-
 
 if __name__ == "__main__":
     main()
