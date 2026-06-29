@@ -17,7 +17,7 @@ from telegram.ext import (
 
 # ==================== CONFIGURATION ====================
 
-# Get bot token from environment variable (SECURE - NOT hardcoded!)
+# Get bot token from environment variable
 TOKEN = os.environ.get("TOKEN") or os.environ.get("BOT_TOKEN")
 
 if not TOKEN:
